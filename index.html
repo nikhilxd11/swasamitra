@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SwasaMitra spirometer: 3D cutaway</title>
+<style>
+:root{--bg:#fff;--tx:#1b2733;--mu:#5f6b78;--bd:#d5dde3;--ac:#1b8a8f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10181f;--tx:#e6edf2;--mu:#9aa8b4;--bd:#2a3742;--ac:#5dcad0}}
+:root[data-theme="dark"]{--bg:#10181f;--tx:#e6edf2;--mu:#9aa8b4;--bd:#2a3742;--ac:#5dcad0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Calibri,Arial,sans-serif;line-height:1.45}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 4px}
+p.s{margin:0 0 12px;color:var(--mu);font-size:14px}
+#wrap{position:relative;height:360px;border-radius:12px;overflow:hidden;background:#0d1a26}
+canvas{display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab}
+.b{position:absolute;left:0;top:0;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#1b8a8f;color:#fff;font:600 12px/22px Arial,sans-serif;text-align:center;pointer-events:none;border:1px solid #bfe9ea}
+.bar{display:flex;gap:8px;margin:10px 0 14px}
+button{font:inherit;font-size:14px;padding:7px 14px;border-radius:8px;border:1px solid var(--bd);background:transparent;color:var(--tx);cursor:pointer}
+button[aria-pressed="true"]{border-color:var(--ac);color:var(--ac)}
+ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr;gap:6px}
+@media(min-width:600px){ol{grid-template-columns:1fr 1fr}}
+li{display:flex;gap:10px;align-items:flex-start;font-size:14px;padding:8px 10px;border:1px solid var(--bd);border-radius:8px}
+li i{flex:none;width:22px;height:22px;border-radius:50%;background:#1b8a8f;color:#fff;font:600 12px/22px Arial,sans-serif;text-align:center;font-style:normal}
+li span{color:var(--mu)}
+.n{margin-top:12px;font-size:13px;color:var(--mu)}
+</style></head>
+<body><main>
+<h1>SwasaMitra spirometer: cutaway view</h1>
+<p class="s">Drag to rotate. Airflow particles show a blow passing through the flow tube.</p>
+<div id="wrap"><canvas id="c" aria-label="3D cutaway of the SwasaMitra spirometer showing its internal components"></canvas></div>
+<div class="bar"><button id="bs" aria-pressed="true">Shell</button><button id="bp" aria-pressed="false">Pause</button></div>
+<ol id="lg"></ol>
+<p class="n">Stylised model for explanation. Sizes and positions are illustrative, not final hardware dimensions.</p>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+var HP=Math.PI/2,wrap=document.getElementById('wrap'),cv=document.getElementById('c');
+var R=new THREE.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(window.devicePixelRatio||1,2));R.setClearColor(0x0d1a26);
+var S=new THREE.Scene(),cam=new THREE.PerspectiveCamera(38,1,0.1,100);cam.position.set(0,2.4,17);cam.lookAt(0,0,0);
+S.add(new THREE.AmbientLight(0xffffff,0.75));var dl=new THREE.DirectionalLight(0xffffff,0.8);dl.position.set(4,8,6);S.add(dl);
+var G=new THREE.Group(),I=new THREE.Group();I.position.x=0.6;G.add(I);S.add(G);G.rotation.set(0.32,-0.55,0);
+function M(c,o){return new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:0.5,metalness:0.1},o||{}));}
+function add(geo,mat,x,y,z,rx,ry,rz){var m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx||0,ry||0,rz||0);I.add(m);return m;}
+function cyl(r1,r2,h,s){return new THREE.CylinderGeometry(r1,r2,h,s||24);}
+function box(a,b,c){return new THREE.BoxGeometry(a,b,c);}
+var shell=new THREE.Group();I.add(shell);
+var sg=new THREE.CylinderGeometry(1.3,1.3,8.8,20,1,true);
+var sw=new THREE.Mesh(sg,new THREE.MeshBasicMaterial({color:0x7fb7d6,wireframe:true,transparent:true,opacity:0.25}));
+var sf=new THREE.Mesh(sg,new THREE.MeshStandardMaterial({color:0x9ec9e2,transparent:true,opacity:0.1,side:THREE.DoubleSide}));
+[sw,sf].forEach(function(m){m.position.x=0.2;m.rotation.z=HP;shell.add(m);});
+add(cyl(0.5,0.4,1.3),M(0x8a96a3),-5.2,0,0,0,0,HP);
+add(cyl(0.55,0.55,3),M(0x1b8a8f,{transparent:true,opacity:0.35}),-3.1,0,0,0,0,HP);
+add(new THREE.TorusGeometry(0.45,0.1,12,32),M(0xcfd8dc),-3.1,0,0,0,HP,0);
+add(cyl(0.07,0.07,0.5,12),M(0xcfd8dc),-3.8,0.82,0);add(cyl(0.07,0.07,0.5,12),M(0xcfd8dc),-2.4,0.82,0);
+add(box(2,0.22,0.7),M(0x1b8a8f),-3.1,1.12,0);
+add(box(0.3,0.3,0.3),M(0x5dd0d4),-1.35,0,0);
+add(box(4,0.08,1.6),M(0x1f7a5a),1.5,-0.35,0);
+add(box(0.45,0.1,0.45),M(0x534ab7),-0.2,-0.26,0.4);
+add(box(1.2,0.14,1),M(0x2b2f3a),1.1,-0.24,0);add(box(0.7,0.1,0.6),M(0xbfc5cc),1.1,-0.14,0);
+add(cyl(0.45,0.45,0.2),M(0x534ab7),2.3,-0.2,0);add(cyl(0.2,0.3,0.08),M(0x26215c),2.3,-0.08,0);
+var led=add(new THREE.SphereGeometry(0.1,16,16),M(0xef9f27,{emissive:0xef9f27,emissiveIntensity:0.8}),0.35,-0.22,0.6);
+add(cyl(0.4,0.4,1.2),M(0xd9902f),3.9,-0.3,0,0,0,HP);
+var sp=add(box(0.5,0.2,0.5),new THREE.MeshBasicMaterial({color:0xb4b2a9,wireframe:true}),3.0,-0.2,-0.55);
+function ln(a,b){var g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(a[0],a[1],a[2]),new THREE.Vector3(b[0],b[1],b[2])]);I.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0xf0c26a})));}
+ln([-3.1,1.0,0],[-0.2,-0.2,0.4]);ln([-1.35,0,0],[-0.2,-0.2,0.4]);ln([-0.2,-0.2,0.4],[0.6,-0.2,0.2]);ln([1.7,-0.22,0],[1.85,-0.2,0]);ln([0.5,-0.22,0.4],[0.35,-0.22,0.6]);ln([2.8,-0.2,-0.5],[1.7,-0.22,-0.3]);
+var N=70,pp=new Float32Array(N*3),pg=new THREE.BufferGeometry();
+function rs(i,x){var a=Math.random()*6.283,r=Math.sqrt(Math.random())*0.32;pp[i*3]=x;pp[i*3+1]=Math.cos(a)*r;pp[i*3+2]=Math.sin(a)*r;}
+for(var i=0;i<N;i++)rs(i,-5.7+Math.random()*4.3);
+pg.setAttribute('position',new THREE.BufferAttribute(pp,3));
+I.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0x9ff0f5,size:0.1,transparent:true,opacity:0.95})));
+var L=[['Mouthpiece','single-use, hygienic',[-5.2,0.8,0]],['Flow tube and restriction','makes a small pressure drop',[-3.1,-0.9,0]],['Pressure sensor','reads the drop across two ports',[-3.1,1.55,0]],['Temp and humidity sensor','corrects to standard conditions',[-1.35,0.5,0]],['ADC','digitises the sensor signal',[-0.2,0.2,0.4]],['ESP32-S3','grader, voice prompts, Bluetooth',[1.1,0.25,0]],['Speaker','local-language coaching',[2.3,0.45,0]],['LED','basic result without the phone',[0.55,0.05,0.75]],['Li-ion cell','portable power',[3.9,0.3,0]],['SpO2 module','optional, Phase 2',[3.0,0.15,-0.55]]];
+var lg=document.getElementById('lg'),bd=[];
+L.forEach(function(l,k){var b=document.createElement('div');b.className='b';b.textContent=k+1;wrap.appendChild(b);bd.push(b);
+var li=document.createElement('li');li.innerHTML='<i>'+(k+1)+'</i><div><b style="font-weight:600">'+l[0]+'</b><br><span>'+l[1]+'</span></div>';lg.appendChild(li);});
+var drag=false,lx=0,paused=false,t=0;
+cv.addEventListener('pointerdown',function(e){drag=true;lx=e.clientX;});
+window.addEventListener('pointerup',function(){drag=false;});
+window.addEventListener('pointermove',function(e){if(drag){G.rotation.y+=(e.clientX-lx)*0.01;lx=e.clientX;}});
+var bs=document.getElementById('bs'),bp=document.getElementById('bp');
+bs.onclick=function(){shell.visible=!shell.visible;bs.setAttribute('aria-pressed',shell.visible);};
+bp.onclick=function(){paused=!paused;bp.setAttribute('aria-pressed',paused);bp.textContent=paused?'Play':'Pause';};
+function size(){var w=wrap.clientWidth,h=wrap.clientHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+window.addEventListener('resize',size);size();
+function loop(){requestAnimationFrame(loop);
+if(!paused){t+=0.016;if(!drag)G.rotation.y+=0.004;
+var sp2=0.025+0.05*(Math.sin(t*1.3)*0.5+0.5);
+for(var i=0;i<N;i++){pp[i*3]+=sp2;if(pp[i*3]>-1.4)rs(i,-5.7);}pg.attributes.position.needsUpdate=true;
+led.material.emissiveIntensity=0.3+0.9*(Math.sin(t*3)*0.5+0.5);}
+R.render(S,cam);
+var w=wrap.clientWidth,h=wrap.clientHeight;
+for(var k=0;k<L.length;k++){var v=I.localToWorld(new THREE.Vector3(L[k][2][0],L[k][2][1],L[k][2][2])).project(cam);
+bd[k].style.transform='translate('+((v.x*0.5+0.5)*w)+'px,'+((-v.y*0.5+0.5)*h)+'px)';}
+}
+loop();
+})();
+</script></body></html>
